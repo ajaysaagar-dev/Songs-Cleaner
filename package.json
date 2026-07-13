@@ -1,0 +1,13 @@
+{
+  "name": "songs-cleaner",
+  "version": "1.0.0",
+  "description": "A web-based UI tool to clean MP3 song metadata by removing promotions and MassTamilan watermarks.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-id3": "^0.2.9",
+    "jimp": "^1.6.1"
+  }
+}

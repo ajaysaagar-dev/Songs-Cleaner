@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metadata Cleaner | Songs & Audio</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+            --glass-bg: rgba(30, 41, 59, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --color-primary: #8b5cf6; /* Violet */
+            --color-primary-glow: rgba(139, 92, 246, 0.3);
+            --color-secondary: #06b6d4; /* Cyan */
+            --color-secondary-glow: rgba(6, 182, 212, 0.3);
+            --color-success: #10b981; /* Emerald */
+            --color-danger: #ef4444; /* Rose */
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-title-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            font-size: 2.25rem;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, #7c3aed 100%);
+            box-shadow: 0 0 15px var(--color-primary-glow);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 25px var(--color-primary-glow);
+            filter: brightness(1.1);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1000px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            min-height: 40px;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #c084fc;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition-smooth);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .tag-badge:hover {
+            background: rgba(139, 92, 246, 0.35);
+            border-color: rgba(139, 92, 246, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .tag-delete {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.1rem;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            transition: var(--transition-smooth);
+        }
+
+        .tag-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .tag-input-container {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .tag-input:focus {
+            border-color: var(--color-primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.25);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--color-primary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        /* Scrollbar customisation */
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .log-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .log-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+        }
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .log-container {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            padding: 1.25rem;
+            height: 180px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 0.5rem;
+            line-height: 1.4;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .log-text {
+            word-break: break-all;
+        }
+
+        .log-text.info {
+            color: var(--color-secondary);
+        }
+
+        .log-text.success {
+            color: var(--color-success);
+        }
+
+        .log-text.error {
+            color: var(--color-danger);
+        }
+
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Compare diff modal / section in logs */
+        .diff-details {
+            margin-left: 1.5rem;
+            font-size: 0.8rem;
+            color: #a7f3d0; /* light green */
+            border-left: 2px solid rgba(16, 185, 129, 0.3);
+            padding-left: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 100;
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        .toast-icon {
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title-container">
+            <span class="header-logo">Metadata Cleaner</span>
+            <span style="font-weight: 300; font-size: 1.5rem; color: var(--text-secondary);">|</span>
+            <span style="font-weight: 600; font-size: 1.25rem;">Songs & Audio</span>
+        </div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; letter-spacing: 0.05em; background: rgba(255, 255, 255, 0.05); padding: 0.4rem 1rem; border-radius: 9999px; border: 1px solid var(--glass-border);">
+            developed by ajaysaagar
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- TAGS PANEL: Settings -->
+        <div class="panel tags-panel" style="height: auto; min-height: unset; padding: 1.5rem;">
+            <div class="panel-header" style="margin-bottom: 0.5rem;">
+                <div class="panel-title">
+                    <span>🏷️</span> Metadata Tags to Remove
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Specify the custom text patterns, links, or keywords you want to clean from the MP3 file metadata. The tags list is stored in your browser's local storage.
+            </p>
+            <div class="tag-input-container">
+                <input type="text" id="tag-input" class="tag-input" placeholder="Enter custom tag to remove (e.g. masstamilan.com)" onkeydown="handleTagInputKeydown(event)">
+                <button class="btn btn-primary" onclick="addTagFromInput()">
+                    <span>➕</span> Add Tag
+                </button>
+            </div>
+            <div class="tags-container" id="tags-list">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- INTEGRATED PROCESSOR PANEL -->
+        <div class="panel" style="flex: 1; height: auto; min-height: 550px;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>🖥️</span> Processing Console
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span class="badge" id="unclean-count" style="background: var(--color-primary); font-size: 0.85rem; padding: 0.25rem 0.75rem;">0 unclean songs</span>
+                    <button class="btn btn-primary btn-disabled" id="btn-clean-unclean" onclick="cleanUncleanFolder()">
+                        <span>✨</span> Clean All Songs
+                    </button>
+                </div>
+            </div>
+            
+            <div style="flex: 1; display: flex; flex-direction: column; background: #05070c; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; overflow: hidden; margin-top: 0.5rem; height: 380px;">
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; gap: 0.4rem;">
+                    <span class="terminal-dot red" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #ef4444;"></span>
+                    <span class="terminal-dot yellow" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #f59e0b;"></span>
+                    <span class="terminal-dot green" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #10b981;"></span>
+                    <span style="margin-left: 0.5rem; color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Courier New', Courier, monospace;">bash - metadata-cleaner.sh</span>
+                </div>
+                <div class="log-container" id="log-container" style="flex: 1; padding: 1.25rem; overflow-y: auto; background: transparent; height: 100%;">
+                    <div class="log-entry">
+                        <span class="log-time" style="color: #64748b;">[System]</span>
+                        <span class="log-text" style="color: #e2e8f0;">Ready. Place your MP3 files in the "unclean" folder and click "Clean All Songs".</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                <button class="btn" style="padding: 0.4rem 1rem; font-size: 0.8rem;" onclick="clearLogs()">
+                    <span>🧹</span> Clear Console
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toast-icon">💡</span>
+        <span id="toast-message">Notification message</span>
+    </div>
+
+    <script>
+        let isCleaningLocal = false;
+
+        // Tags Management
+        const STORAGE_KEY = 'songs_cleaner_tags';
+        const DEFAULT_TAGS = ['masstamilan.com'];
+        let activeTags = [];
+
+        function loadTags() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    activeTags = JSON.parse(stored);
+                } catch (e) {
+                    console.error('Error parsing stored tags, resetting to default', e);
+                    activeTags = [...DEFAULT_TAGS];
+                }
+            } else {
+                activeTags = [...DEFAULT_TAGS];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(activeTags));
+            }
+            renderTags();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tags-list');
+            container.innerHTML = '';
+            
+            if (activeTags.length === 0) {
+                container.innerHTML = `<span style="color: var(--text-muted); font-size: 0.85rem; padding: 0.25rem 0.5rem;">No tags added. Metadata will not be cleaned of any custom text.</span>`;
+                return;
+            }
+
+            activeTags.forEach((tag, index) => {
+                const badge = document.createElement('div');
+                badge.className = 'tag-badge';
+                badge.innerHTML = `
+                    <span>${escapeHtml(tag)}</span>
+                    <button class="tag-delete" onclick="removeTag(${index})" title="Remove tag">✕</button>
+                `;
+                container.appendChild(badge);
+            });
+        }
+
+        function addTagFromInput() {
+            const input = document.getElementById('tag-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            if (activeTags.some(t => t.toLowerCase() === val.toLowerCase())) {
+                showToast('💡', 'Tag already exists in the list.');
+                return;
+            }
+
+            activeTags.push(val);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(activeTags));
+            renderTags();
+            input.value = '';
+            addLog('info', `Added tag to remove list: "${val}"`);
+            showToast('➕', `Added tag: "${val}"`);
+        }
+
+        function handleTagInputKeydown(e) {
+            if (e.key === 'Enter') {
+                addTagFromInput();
+            }
+        }
+
+        function removeTag(index) {
+            const removed = activeTags[index];
+            activeTags.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(activeTags));
+            renderTags();
+            addLog('info', `Removed tag from remove list: "${removed}"`);
+            showToast('✕', `Removed tag: "${removed}"`);
+        }
+
+        // Fetch local unclean files on load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTags();
+            fetchUncleanSongs();
+            setInterval(fetchUncleanSongs, 5000);
+        });
+
+        // Fetch files in unclean/
+        async function fetchUncleanSongs() {
+            if (isCleaningLocal) return; // Skip fetching while we are cleaning
+            try {
+                const response = await fetch('/api/unclean-songs');
+                if (!response.ok) throw new Error('Failed to fetch songs list');
+                const songs = await response.json();
+                
+                updateUncleanUI(songs);
+            } catch (err) {
+                console.error('Error fetching unclean songs:', err);
+            }
+        }
+
+        function updateUncleanUI(songs) {
+            const countBadge = document.getElementById('unclean-count');
+            const cleanBtn = document.getElementById('btn-clean-unclean');
+            
+            const uncleanCount = songs.filter(s => !s.cleaned).length;
+            countBadge.textContent = `${uncleanCount} unclean / ${songs.length} total`;
+
+            if (uncleanCount === 0) {
+                cleanBtn.classList.add('btn-disabled');
+            } else {
+                cleanBtn.classList.remove('btn-disabled');
+            }
+        }
+
+        // Clean local unclean folder songs sequentially
+        async function cleanUncleanFolder() {
+            if (isCleaningLocal) return;
+            isCleaningLocal = true;
+            
+            const btn = document.getElementById('btn-clean-unclean');
+            btn.classList.add('btn-disabled');
+            btn.innerHTML = '<span>⏳</span> Cleaning...';
+            
+            addLog('info', 'Starting metadata cleaning for files in unclean/ folder...');
+            showToast('⏳', 'Cleaning local unclean songs...');
+
+            try {
+                // Get current list of songs from API
+                const response = await fetch('/api/unclean-songs');
+                if (!response.ok) throw new Error('Failed to fetch songs list');
+                const songs = await response.json();
+                
+                const mp3Songs = songs.filter(s => !s.cleaned);
+                if (mp3Songs.length === 0) {
+                    addLog('info', 'All songs are already cleaned.');
+                    showToast('💡', 'No unclean songs found.');
+                    return;
+                }
+                
+                for (const song of mp3Songs) {
+                    addLog('info', `Processing: ${song.name}`);
+                    try {
+                        const cleanRes = await fetch('/api/clean-file', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ file: song.name, tags: activeTags })
+                        });
+                        const result = await cleanRes.json();
+                        
+                        if (cleanRes.ok && result.success) {
+                            const displayName = result.cleanedFile && result.cleanedFile !== song.name 
+                                ? `${song.name} ➔ ${result.cleanedFile}` 
+                                : song.name;
+                            addLog('success', `✔ Cleaned: ${displayName}`);
+                            if (result.details && result.details.changes && result.details.changes.length > 0) {
+                                addDiffLog(result.details.changes);
+                            }
+                        } else {
+                            const errMsg = result.error || 'Server error';
+                            addLog('error', `✘ Failed: ${song.name} - ${errMsg}`);
+                        }
+                    } catch (err) {
+                        addLog('error', `Error processing ${song.name}: ${err.message}`);
+                    }
+                }
+                
+                showToast('✅', 'Folder songs cleaning complete!');
+            } catch (err) {
+                addLog('error', `Error during folder cleaning: ${err.message}`);
+                showToast('❌', 'Error cleaning songs.');
+            } finally {
+                isCleaningLocal = false;
+                btn.classList.remove('btn-disabled');
+                btn.innerHTML = '<span>✨</span> Clean All Songs';
+                fetchUncleanSongs();
+            }
+        }
+
+        // Logs helpers
+        function addLog(type, text) {
+            const container = document.getElementById('log-container');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let typeLabel = '[Info]';
+            if (type === 'success') typeLabel = '[Cleaned]';
+            if (type === 'error') typeLabel = '[Error]';
+            
+            entry.innerHTML = `
+                <span class="log-time" style="color: #64748b;">[${time}]</span>
+                <span class="log-text ${type}">${escapeHtml(typeLabel)} ${escapeHtml(text)}</span>
+            `;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addDiffLog(changes) {
+            const container = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let diffHTML = '<div class="diff-details">';
+            changes.forEach(change => {
+                diffHTML += `<div>↳ ${escapeHtml(change)}</div>`;
+            });
+            diffHTML += '</div>';
+            
+            entry.innerHTML = `
+                <span class="log-time" style="visibility: hidden">[00:00:00]</span>
+                ${diffHTML}
+            `;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLogs() {
+            const container = document.getElementById('log-container');
+            container.innerHTML = `
+                <div class="log-entry">
+                    <span class="log-time" style="color: #64748b;">[System]</span>
+                    <span class="log-text" style="color: #e2e8f0;">Logs cleared.</span>
+                </div>
+            `;
+        }
+
+        // Toast notifications
+        function showToast(icon, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-icon').textContent = icon;
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // Helpers
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
